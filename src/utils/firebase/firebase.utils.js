@@ -1,4 +1,4 @@
-import { GoogleAuthProvider, getAuth, signInWithPopup, signInWithRedirect } from 'firebase/auth'
+import { GoogleAuthProvider, createUserWithEmailAndPassword, getAuth, signInWithPopup, signInWithRedirect } from 'firebase/auth'
 import { doc, getDoc, getFirestore, setDoc } from 'firebase/firestore'
 
 import { initializeApp } from 'firebase/app'
@@ -16,18 +16,22 @@ const firebaseConfig = {
   // Initialize Firebase
   const firebaseApp = initializeApp(firebaseConfig);
 
-  const provider = new GoogleAuthProvider();
+  // google 전용 provider
+  const googleProvider = new GoogleAuthProvider();
 
-  provider.setCustomParameters({
+  googleProvider.setCustomParameters({
     prompt: "select_account"
   })
 
+  // 사용자가 적절한 인증을 하는지 추적할 수 있는 유일한 방법이다. 싱글톤 패턴
   export const auth = getAuth()
-  export const signInWithGooglePopup = () => signInWithPopup(auth, provider)
+  export const signInWithGooglePopup = () => signInWithPopup(auth, googleProvider)
+  export const signInWithGoogleRedirect = () => signInWithRedirect(auth, googleProvider)
 
   export const db = getFirestore()
 
-  export const createUserDocumentFromAuth = async (userAuth) => {
+  export const createUserDocumentFromAuth = async (userAuth, additionalInformation = {}) => {
+    if(!userAuth) return
     // 가장 먼저 해야할 것은 기존 문서 참조가 있는지 확인하는 것
     // doc은 데이터베이스에서 문서 검색기능
     // 인자가 3개 필요하다. db, collection, 식별자(고유ID)
@@ -53,7 +57,8 @@ const firebaseConfig = {
         await setDoc(userDocRef, {
           displayName,
           email,
-          createAt
+          createAt,
+          ...additionalInformation
         })
       }
       catch(e) {
@@ -62,4 +67,9 @@ const firebaseConfig = {
     }
     // if user data exists
     return userDocRef
+  }
+
+  export const createAuthUserEmailAndPassword = async (email, password) => {
+    if(!email || !password) return;
+    return await createUserWithEmailAndPassword(auth, email, password)
   }
