@@ -1,4 +1,4 @@
-import { GoogleAuthProvider, createUserWithEmailAndPassword, getAuth, signInWithEmailAndPassword, signInWithPopup, signInWithRedirect } from 'firebase/auth'
+import { GoogleAuthProvider, createUserWithEmailAndPassword, getAuth, signInWithEmailAndPassword, signInWithPopup, signInWithRedirect, signOut } from 'firebase/auth'
 import { doc, getDoc, getFirestore, setDoc } from 'firebase/firestore'
 
 import { initializeApp } from 'firebase/app'
@@ -14,6 +14,7 @@ const firebaseConfig = {
   };
   
   // Initialize Firebase
+  // eslint-disable-next-line no-unused-vars
   const firebaseApp = initializeApp(firebaseConfig);
 
   // google 전용 provider
@@ -79,3 +80,5 @@ const firebaseConfig = {
 
     return await signInWithEmailAndPassword(auth, email, password)
   }
+
+  export const signOutUser = async () => await signOut(auth)
